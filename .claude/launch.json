@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "recap-editor",
+      "runtimeExecutable": "uv",
+      "runtimeArgs": ["run", "scripts/editor.py"],
+      "port": 8765
+    }
+  ]
+}

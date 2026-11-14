@@ -1,0 +1,18 @@
+[project]
+name = "movie-making"
+version = "0.1.0"
+description = "Local AI workflow: analyse footage, plan a creative edit, export FCPXML for Final Cut Pro"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "mlx-vlm",
+    "opencv-python-headless",
+    "scenedetect",
+    "librosa",
+    "soundfile",
+    "numpy",
+    "pillow",
+    "mlx-whisper>=0.4.3",
+]
+
+[tool.uv]
+package = false

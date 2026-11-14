@@ -1,0 +1,11 @@
+{
+  "name": "my movie",
+  "shots_dir": "/Volumes/MyDisk/MOVIES/my movie/SHOTS",
+  "pics_dir": "/Volumes/MyDisk/MOVIES/my movie/PICS",
+  "music": "/Volumes/MyDisk/MOVIES/my movie/song.m4a",
+  "work_dir": "work/my-movie",
+  "vlm_model": "models/Qwen3-VL-8B-Instruct-4bit",
+  "fcp_event": "my movie",
+  "timezone": "Europe/Paris",
+  "context": "one line about the film, e.g. a drive through a city from dusk into the night"
+}

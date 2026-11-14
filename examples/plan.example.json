@@ -1,0 +1,14 @@
+{
+  "project": "my movie - AI cut v1",
+  "music": [{"from_beat": 16, "to_beat": 32}, {"from_beat": 96, "to_beat": 168, "tail": 4.0, "fade_out": 4.0}],
+  "music_volume_db": 0,
+  "clip_volume_db": -22,
+  "cut_early_frames": 1,
+  "cut_on_motion": 0.75,
+  "segments": [
+    {"clip": "C0001", "in": 2.0, "beats": 4, "volume_db": -8, "note": "INTRO: why this shot is here"},
+    {"clip": "C0002", "in": 0.5, "beats": 2, "note": "drums enter"},
+    {"photo": "DSC00001", "beats": 1, "note": "a still"},
+    {"clip": "C0003", "in": 1.0, "until_end": true, "fixed": true, "note": "last shot under the music fade"}
+  ]
+}

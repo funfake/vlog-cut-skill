@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recap editor</title>
+<style>
+  :root { --bg:#121212; --panel:#1b1b1b; --line:#2c2c2c; --text:#e9e6df; --muted:#9a968e; --accent:#e9c46a; --bad:#e76f51; --ok:#8ac926; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:14px/1.4 -apple-system, system-ui, sans-serif; display:grid; grid-template-columns: 400px 1fr; height:100vh; }
+  aside { background:var(--panel); border-right:1px solid var(--line); overflow:auto; padding:14px 16px 40px; }
+  main { display:flex; flex-direction:column; min-width:0; }
+  h1 { font-size:16px; margin:0 0 6px; }
+  h2 { font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:22px 0 8px; border-top:1px solid var(--line); padding-top:14px; }
+  label { display:block; color:var(--muted); font-size:12px; margin:8px 0 3px; }
+  input[type=text], input[type=number], textarea, select { width:100%; background:#0f0f0f; color:var(--text); border:1px solid var(--line); border-radius:6px; padding:6px 8px; font:inherit; }
+  textarea { min-height:86px; resize:vertical; }
+  .row { display:flex; gap:8px; align-items:center; }
+  .row > * { flex:1; }
+  .slider { display:grid; grid-template-columns: 92px 1fr 44px; gap:8px; align-items:center; margin:4px 0; }
+  .slider span { color:var(--muted); font-size:12px; }
+  .slider output { text-align:right; font-variant-numeric: tabular-nums; }
+  input[type=range] { width:100%; accent-color: var(--accent); }
+  button { background:#2a2a2a; color:var(--text); border:1px solid #3a3a3a; border-radius:6px; padding:6px 10px; font:inherit; cursor:pointer; }
+  button:hover { border-color: var(--accent); }
+  button.primary { background:var(--accent); color:#1a1a1a; border-color:var(--accent); font-weight:600; }
+  button.small { padding:2px 7px; font-size:12px; }
+  .photo, .stamp { display:grid; gap:6px; align-items:center; padding:6px; border:1px solid var(--line); border-radius:8px; margin:6px 0; background:#161616; }
+  .photo { grid-template-columns: 80px 1fr 64px auto; }
+  .photo img { width:80px; height:45px; object-fit:cover; border-radius:4px; }
+  .stamp { grid-template-columns: 1fr 58px 50px auto; }
+  .btns { display:flex; gap:3px; }
+  .toolbar { display:flex; gap:6px; align-items:center; padding:10px 14px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  .toolbar .tab.active { border-color:var(--accent); color:var(--accent); }
+  .status { margin-left:auto; color:var(--muted); font-size:12px; }
+  .stage { flex:1; display:flex; align-items:center; justify-content:center; padding:16px; min-height:0; }
+  .stage img { max-width:100%; max-height:100%; border-radius:6px; box-shadow:0 10px 40px #000a; transition: opacity .15s; }
+  .stage img.busy { opacity:.55; }
+  pre { white-space:pre-wrap; background:#0f0f0f; border:1px solid var(--line); border-radius:6px; padding:8px; font-size:12px; max-height:220px; overflow:auto; }
+  .hint { color:var(--muted); font-size:12px; margin:4px 0; }
+  .ok { color:var(--ok); } .bad { color:var(--bad); }
+</style>
+</head>
+<body>
+<aside>
+  <h1>Recap editor</h1>
+  <div class="hint">Every change re-renders on the right. Same renderer as the scripts, so this is exactly what goes into Final Cut.</div>
+
+  <h2>Card</h2>
+  <label>Title</label><input type="text" id="title">
+  <label>Text (one line per line)</label><textarea id="lines"></textarea>
+  <label>Date</label><input type="text" id="date">
+  <label>Handwriting font</label><select id="font"></select>
+  <div class="slider"><span>Title size</span><input type="range" id="title_size" min="40" max="130"><output></output></div>
+  <div class="slider"><span>Text size</span><input type="range" id="body_size" min="24" max="70"><output></output></div>
+  <div class="slider"><span>Date size</span><input type="range" id="date_size" min="18" max="56"><output></output></div>
+  <div class="slider"><span>Line height</span><input type="range" id="rule" min="28" max="80"><output></output></div>
+  <div class="slider"><span>Gap</span><input type="range" id="gap" min="0" max="90"><output></output></div>
+  <div class="slider"><span>Width (0=auto)</span><input type="range" id="width" min="0" max="1500" step="10"><output></output></div>
+
+  <h2>Recap</h2>
+  <div class="row">
+    <div><label>Style</label><select id="style"></select></div>
+    <div><label>Layout seed</label><div class="row"><input type="number" id="seed"><button class="small" id="shuffle" title="new random layout">🎲</button></div></div>
+  </div>
+  <label>Photos (in the order they land)</label>
+  <div id="photos"></div>
+  <button class="small" id="addPhoto">+ photo</button>
+
+  <h2>Stamps</h2>
+  <div class="slider"><span>Stamp size</span><input type="range" id="stamp_size" min="30" max="100"><output></output></div>
+  <div class="hint">text · at (s on the timeline) · duration (s). Click 👁 to preview over the real footage.</div>
+  <div id="stamps"></div>
+  <button class="small" id="addStamp">+ stamp</button>
+
+  <h2>Build</h2>
+  <label>Final Cut export to build on (.fcpxmld)</label>
+  <select id="exportSel"></select>
+  <input type="text" id="export" style="margin-top:4px">
+  <label>Project name in Final Cut</label><input type="text" id="project">
+  <label style="display:flex;gap:6px;align-items:center;color:var(--text)"><input type="checkbox" id="include_audio" style="width:auto"> include the audio mix (uncheck if your export already has it)</label>
+  <div class="row" style="margin-top:10px">
+    <button id="save">Save images only</button>
+    <button class="primary" id="build">Build FCPXML</button>
+  </div>
+  <pre id="log" hidden></pre>
+  <div class="row" style="margin-top:14px"><button class="small" id="reset">Reset to defaults</button></div>
+</aside>
+
+<main>
+  <div class="toolbar">
+    <button class="tab active" data-view="final">Final frame</button>
+    <button class="tab" data-view="card">Card only</button>
+    <button class="tab" data-view="frame">Photo <input type="number" id="frameIdx" min="1" value="1" style="width:46px;padding:1px 4px"></button>
+    <span class="status" id="status">…</span>
+  </div>
+  <div class="stage"><img id="preview" alt="preview"></div>
+</main>
+
+<script>
+let S = null, view = "final", stampIdx = 0, timer = null, inflight = 0;
+const $ = id => document.getElementById(id);
+const cardKeys = ["title_size","body_size","date_size","rule","gap","width"];
+
+async function init() {
+  const r = await (await fetch("/api/state")).json();
+  S = r.state;
+  $("font").innerHTML = r.fonts.map(f => `<option value="${f.path}">${f.name}</option>`).join("");
+  $("style").innerHTML = r.styles.map(s => `<option>${s}</option>`).join("");
+  window.PICS = r.pics;
+  const ex = [...new Set([S.export, ...r.exports])];
+  $("exportSel").innerHTML = ex.map(e => `<option value="${e}">${e.split("/").slice(-2).join("/")}</option>`).join("");
+  fill(); render();
+}
+
+function fill() {
+  $("title").value = S.card.title; $("lines").value = S.card.lines.join("\n"); $("date").value = S.card.date;
+  $("font").value = S.font; $("style").value = S.style; $("seed").value = S.seed;
+  for (const k of cardKeys) { $(k).value = S.card[k] ?? 0; $(k).nextElementSibling.value = $(k).value; }
+  $("stamp_size").value = S.stamp_size; $("stamp_size").nextElementSibling.value = S.stamp_size;
+  $("export").value = S.export; $("exportSel").value = S.export; $("project").value = S.project; $("include_audio").checked = !!S.include_audio;
+  drawPhotos(); drawStamps();
+}
+
+function drawPhotos() {
+  $("photos").innerHTML = S.photos.map((p, i) => `
+    <div class="photo">
+      <img src="/api/thumb?name=${p.name}">
+      <select data-i="${i}" class="pname">${PICS.map(n => `<option ${n===p.name?"selected":""}>${n}</option>`).join("")}</select>
+      <input type="text" data-i="${i}" class="pcap" value="${p.caption}" title="caption (polaroid)">
+      <div class="btns"><button class="small" data-up="${i}">↑</button><button class="small" data-down="${i}">↓</button><button class="small" data-del="${i}">✕</button></div>
+    </div>`).join("");
+}
+
+function drawStamps() {
+  $("stamps").innerHTML = S.stamps.map((s, i) => `
+    <div class="stamp">
+      <input type="text" data-i="${i}" class="stext" value="${s.text.replace(/"/g,"&quot;")}">
+      <input type="number" step="0.01" data-i="${i}" class="sat" value="${s.at}" title="at (s)">
+      <input type="number" step="0.1" data-i="${i}" class="sdur" value="${s.dur}" title="duration (s)">
+      <div class="btns"><button class="small" data-see="${i}">👁</button><button class="small" data-sdel="${i}">✕</button></div>
+    </div>`).join("");
+}
+
+function read() {
+  S.card.title = $("title").value; S.card.lines = $("lines").value.split("\n"); S.card.date = $("date").value;
+  for (const k of cardKeys) S.card[k] = Number($(k).value);
+  S.font = $("font").value; S.style = $("style").value; S.seed = Number($("seed").value);
+  S.stamp_size = Number($("stamp_size").value);
+  S.export = $("export").value; S.project = $("project").value; S.include_audio = $("include_audio").checked;
+}
+
+function schedule() { read(); clearTimeout(timer); timer = setTimeout(render, 280); }
+
+async function render() {
+  const id = ++inflight;
+  $("preview").classList.add("busy"); $("status").textContent = "rendering…";
+  const body = {state: S, view: view === "frame" ? "frame" : view, index: view === "stamp" ? stampIdx : Number($("frameIdx").value) - 1};
+  const res = await fetch("/api/render", {method: "POST", body: JSON.stringify(body)});
+  if (id !== inflight) return;
+  if (!res.ok) { $("status").innerHTML = `<span class="bad">${(await res.json()).error}</span>`; $("preview").classList.remove("busy"); return; }
+  const ms = res.headers.get("X-Render-Ms");
+  $("preview").src = URL.createObjectURL(await res.blob());
+  $("preview").classList.remove("busy");
+  $("status").textContent = `${view === "stamp" ? "stamp " + (stampIdx+1) : view} · ${ms} ms`;
+}
+
+document.addEventListener("input", e => {
+  if (e.target.type === "range") e.target.nextElementSibling.value = e.target.value;
+  const t = e.target;
+  if (t.classList.contains("pcap")) S.photos[t.dataset.i].caption = t.value;
+  if (t.classList.contains("stext")) S.stamps[t.dataset.i].text = t.value;
+  if (t.classList.contains("sat")) S.stamps[t.dataset.i].at = Number(t.value);
+  if (t.classList.contains("sdur")) S.stamps[t.dataset.i].dur = Number(t.value);
+  if (t.id === "frameIdx") { view = "frame"; setTab(); }
+  schedule();
+});
+document.addEventListener("change", e => {
+  const t = e.target;
+  if (t.classList.contains("pname")) { S.photos[t.dataset.i].name = t.value; drawPhotos(); schedule(); }
+  if (t.id === "exportSel") { $("export").value = t.value; schedule(); }
+});
+document.addEventListener("click", e => {
+  const d = e.target.dataset;
+  const mv = (a, i, j) => { if (j < 0 || j >= a.length) return; [a[i], a[j]] = [a[j], a[i]]; };
+  if (d.up) { mv(S.photos, +d.up, +d.up - 1); drawPhotos(); schedule(); }
+  if (d.down) { mv(S.photos, +d.down, +d.down + 1); drawPhotos(); schedule(); }
+  if (d.del) { S.photos.splice(+d.del, 1); drawPhotos(); schedule(); }
+  if (d.sdel) { S.stamps.splice(+d.sdel, 1); drawStamps(); schedule(); }
+  if (d.see) { stampIdx = +d.see; view = "stamp"; setTab(); render(); }
+  if (d.view) { view = d.view; setTab(); render(); }
+});
+function setTab() { document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.view === view)); }
+
+$("shuffle").onclick = () => { $("seed").value = Math.floor(Math.random() * 1000); schedule(); };
+$("addPhoto").onclick = () => { S.photos.push({name: PICS[0], caption: ""}); drawPhotos(); schedule(); };
+$("addStamp").onclick = () => { S.stamps.push({text: "00h00 · ", at: 0, dur: 1.8}); drawStamps(); };
+$("reset").onclick = async () => { if (!confirm("Reset all settings to the defaults?")) return; S = (await (await fetch("/api/reset", {method:"POST"})).json()).state; fill(); render(); };
+
+async function post(path) {
+  read(); $("log").hidden = false; $("log").textContent = "working…";
+  const r = await (await fetch(path, {method: "POST", body: JSON.stringify({state: S})})).json();
+  if (r.error) { $("log").innerHTML = `<span class="bad">${r.error}</span>`; return; }
+  let txt = `images: ${r.files.length} written (tag ${r.tag})\nlayers: ${r.layers}`;
+  if (r.fcpxml) txt = `${r.ok ? "✓ built" : "✗ build failed"}: ${r.fcpxml}\nImport in Final Cut: File > Import > XML…\n\n` + txt + (r.ok ? "" : "\n\n" + r.log);
+  $("log").innerHTML = r.fcpxml ? `<span class="${r.ok ? "ok" : "bad"}">${txt.split("\n")[0]}</span>\n` + txt.split("\n").slice(1).join("\n") : txt;
+}
+$("save").onclick = () => post("/api/save");
+$("build").onclick = () => post("/api/build");
+
+init();
+</script>
+</body>
+</html>

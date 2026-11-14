@@ -1,0 +1,94 @@
+{
+  "_comment": "Example audio layers for augment_fcpxml.py / the editor. spine:N indexes are this example film's clips (0-2 = intro clips with camera sound, 12-34 = everything after the recap); adjust per movie. Sound files are from Final Cut Pro's built-in sound effects library.",
+  "gain": {
+    "music": -3,
+    "sfx card": 3,
+    "spine:0-2": 9
+  },
+  "audio": [
+    {
+      "name": "engine launch",
+      "file": "/Library/Audio/Apple Loops/Apple/Final Cut Pro Sound Effects/Transportation/Auto Vintage Sports Pull Away.caf",
+      "at": 6.41,
+      "src": 5.88,
+      "dur": 2.6,
+      "db": -8,
+      "fade_in": 0.3,
+      "fade_out": 0.8,
+      "lane": -4
+    },
+    {
+      "name": "whoosh into the drop",
+      "file": "/Library/Audio/Apple Loops/Apple/Final Cut Pro Sound Effects/Motions & Transitions/Whoosh 13.caf",
+      "at": 25.87,
+      "src": 0.0,
+      "dur": 1.32,
+      "db": -8,
+      "fade_out": 0.25,
+      "lane": -4
+    },
+    {
+      "name": "night city",
+      "file": "/Library/Audio/Apple Loops/Apple/Final Cut Pro Sound Effects/Ambience/Traffic City 08.caf",
+      "at": 48.95,
+      "src": 10.0,
+      "dur": 6.4,
+      "db": -10,
+      "fade_in": 2.0,
+      "fade_out": 1.2,
+      "lane": -5
+    }
+  ],
+  "mute": [
+    "spine:12-34"
+  ],
+  "volume_keys": {
+    "spine:0": [
+      [
+        0.0,
+        -30
+      ],
+      [
+        1.2,
+        -8
+      ]
+    ],
+    "spine:1": [
+      [
+        0.0,
+        -8
+      ],
+      [
+        0.6,
+        1
+      ],
+      [
+        1.2,
+        1
+      ]
+    ],
+    "spine:2": [
+      [
+        0.0,
+        1
+      ],
+      [
+        0.5,
+        5
+      ],
+      [
+        1.35,
+        5
+      ],
+      [
+        1.8,
+        -60
+      ]
+    ]
+  },
+  "fades": {
+    "music 1": {
+      "in": 0.5
+    }
+  }
+}

@@ -1,0 +1,18 @@
+# environment and big local files
+.venv/
+models/
+__pycache__/
+.DS_Store
+
+# per-movie, personal: footage analysis, settings with your paths, edit plans, editor state
+work/
+project.json
+projects/*.json
+!projects/example.json
+edit/
+
+# Apple's FCPXML DTDs: copied from your Final Cut Pro at runtime, not redistributed
+vendor/
+
+# local Claude settings
+.claude/settings.local.json
