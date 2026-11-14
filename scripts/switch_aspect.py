@@ -36,12 +36,12 @@ def tf(s):
 
 
 def set_fill(el) -> bool:
-    """Fill the frame (crop the overflow) instead of Final Cut's default Fit (black bars)."""
+    """Spatial conform = Fill: the clip covers the new frame (center crop, no black bars)."""
     c = el.find("adjust-conform")
     if c is None:
         idx = next((i for i, ch in enumerate(el) if ch.tag not in BEFORE_CONFORM), len(el))
-        el.insert(idx, ET.Element("adjust-conform", type="fill"))
-        return True
+        c = ET.Element("adjust-conform")
+        el.insert(idx, c)
     c.set("type", "fill")
     return True
 
@@ -51,6 +51,7 @@ def main():
     ap.add_argument("export")
     ap.add_argument("--to", choices=list(SIZES), required=True)
     ap.add_argument("--project", help="name of the new project (default: source name + aspect)")
+    ap.add_argument("--event", help="Final Cut event to import into (default: the movie's fcp_event setting)")
     ap.add_argument("--state", default=str(ROOT / "edit" / "editor-state.json"),
                     help="editor settings with the recap/card/stamps text (default: edit/editor-state.json)")
     args = ap.parse_args()
@@ -80,23 +81,37 @@ def main():
 
     # 1. the project's frame
     fid = new_id()
-    fmt = ET.Element("format", id=fid, frameDuration=old_fmt.get("frameDuration"), width=str(w), height=str(h),
+    # square pixels stated explicitly: a bare 1440x1080 can otherwise be taken as HDV (stretched pixels)
+    fmt = ET.Element("format", id=fid, frameDuration=old_fmt.get("frameDuration"), fieldOrder="progressive",
+                     width=str(w), height=str(h), paspH="1", paspV="1",
                      colorSpace=old_fmt.get("colorSpace", "1-1-1 (Rec. 709)"))
     res.insert(0, fmt)
     seq.set("format", fid)
     name = args.project or f"{proj.get('name')} ({args.to})"
     proj.set("name", name)
+    # import into the movie's normal event, not whatever event name the source export carried
+    event_name = args.event or cfg.get("fcp_event")
+    for ev in root.iter("event"):
+        if event_name:
+            ev.set("name", event_name)
 
-    # 2. footage fills the new frame
+    # 2. footage fills the new frame (stills/stamps are re-rendered at frame size below; adjustment clips,
+    #    which carry the grade, are left exactly as exported)
     effects = {r.get("id") for r in res if r.tag == "effect"}
     spine = seq.find("spine")
     filled = 0
     for e in spine.iter():
-        if e.tag in ("asset-clip", "video") and e.get("ref") not in effects:
+        if e.tag == "asset-clip" and e.get("ref") not in effects:
             lane = e.get("lane")
             if lane is None or int(lane) > 0:
                 a = next((r for r in res if r.get("id") == e.get("ref")), None)
                 if a is not None and a.get("hasVideo") == "1":
+                    # THE important line: a clip without its own format inherits the sequence's ("default is
+                    # same as parent"). Final Cut omits it on export when clip and project match, so after the
+                    # project turns 4:3 every clip would become a 4:3 container with the 16:9 picture
+                    # letterboxed INSIDE it (black bars; Fill and position then do nothing).
+                    if not e.get("format") and a.get("format"):
+                        e.set("format", a.get("format"))
                     filled += set_fill(e)
 
     # 3. re-render stills at the new size (recap prints, card, stamps)
@@ -190,7 +205,7 @@ def main():
         r = subprocess.run(["xmllint", "--noout", "--dtdvalid", str(dtd), str(out)], capture_output=True, text=True)
         print("DTD valid" if r.returncode == 0 else "DTD ERRORS:\n" + r.stderr[:2000])
     print(f"{args.to} version: {out}")
-    print(f"  frame {w}x{h}, {filled} clips set to Fill (center crop), {len(recap)} recap stills, {n_st} stamps re-rendered")
+    print(f"  frame {w}x{h}, {filled} clips keep their own format and are set to Fill (center crop), {len(recap)} recap stills, {n_st} stamps re-rendered")
     if relinked:
         print(f"  relinked {len(relinked)} media files whose old path is gone (to SHOTS / PICS / music / stills)")
     if still_missing:

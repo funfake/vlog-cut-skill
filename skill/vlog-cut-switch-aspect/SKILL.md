@@ -42,6 +42,12 @@ write into it, never re-use its project name, never overwrite its images.
 
 ## Notes
 
+- **Black bars after a format change = clips without their own `format`.** In FCPXML a clip's format "defaults
+  to same as parent", and Final Cut omits it on export when clip and project match. Change the project to 4:3 and
+  every clip becomes a 4:3 container with the 16:9 picture letterboxed inside it: bars top and bottom, and Fill /
+  position do nothing. `switch_aspect.py` writes each clip's real format explicitly. Adjustment clips are not the
+  cause (they have no spatial conform); leave them exactly as exported.
+- The new project goes into the movie's normal event (`fcp_event`), not the event name the export carried.
 - 4:3 removes 240 px (12.5 %) on each side of a 1920x1080 frame. Stamps sit 96 px from the left edge, so they
   must be re-rendered (the script does), not just cropped.
 - The polaroid recap and scrapbook layouts scale to the frame width; the film-strip style is 16:9-only for now.
