@@ -28,7 +28,7 @@ from common import load_project, out_path  # noqa: E402
 from fonts import drawable  # noqa: E402
 from render_table_stills import black_surface, note_card, place  # noqa: E402
 
-W, H = 1920, 1080
+W, H = 1920, 1080                                         # frame size; switch_aspect.set_canvas() changes it
 INK = (28, 34, 64, 255)
 PAPER = (246, 244, 239, 255)
 
@@ -67,6 +67,7 @@ def style_polaroid(photos, captions, lines, font, rnd, surface):
         # loose pile: each print lands in its own zone around the centre so all stay readable
         zones = [(-560, -170), (-190, -230), (190, -210), (560, -150), (600, 190), (210, 230), (-200, 200), (-580, 170)]
         zx, zy = zones[i % len(zones)]
+        zx = int(zx * W / 1920)                            # zones are designed for 16:9; squeeze for narrower frames
         ctr = (W // 2 + zx + rnd.randint(-40, 40), H // 2 + zy + rnd.randint(-30, 30))
         placed.append((card, ctr, rnd.uniform(-13, 13)))
         f = surface.copy()
@@ -213,7 +214,7 @@ def style_scrapbook(photos, captions, lines, font, rnd, surface):
     """Prints evenly spaced on an oval around the notebook page, clockwise in story order."""
     import math
     n = len(photos)
-    rx, ry = 720, 375
+    rx, ry = int(720 * W / 1920), 375                     # oval follows the frame width (16:9 or 4:3)
     frames, placed = [], []
     for i, p in enumerate(photos):
         ang = math.radians(-157.5 + i * 360 / n)          # start top-left, go clockwise

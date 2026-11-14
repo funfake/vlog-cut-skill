@@ -25,6 +25,9 @@ def load_project(path: str | None = None) -> dict:
     # footage, in <movie folder>/AI, unless project.json sets "output_dir"
     out = Path(cfg.get("output_dir") or Path(cfg["shots_dir"]).parent / "AI")
     cfg["out"], cfg["stills"] = out, out / "stills"
+    if not out.parent.exists():               # movie folder missing: usually the external drive isn't plugged in
+        raise SystemExit(f"Movie folder not found: {out.parent}\n"
+                         "Is the drive connected? (check /Volumes) Otherwise fix the paths in the movie's settings.")
     cfg["stills"].mkdir(parents=True, exist_ok=True)
     return cfg
 

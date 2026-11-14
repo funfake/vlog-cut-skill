@@ -22,9 +22,9 @@ echo "3/5 local models (~7 GB, skipped if present)"
 [ -f models/Qwen3-VL-8B-Instruct-4bit/config.json ] || ./scripts/download_model.sh mlx-community/Qwen3-VL-8B-Instruct-4bit models/Qwen3-VL-8B-Instruct-4bit
 [ -f models/whisper-large-v3-turbo/config.json ] || ./scripts/download_model.sh mlx-community/whisper-large-v3-turbo models/whisper-large-v3-turbo
 
-echo "4/5 Claude skills /vlog-cut and /vlog-cut-setup"
+echo "4/5 Claude skills (/vlog-cut, /vlog-cut-setup, /vlog-cut-switch-aspect)"
 mkdir -p ~/.claude/skills
-for sk in vlog-cut vlog-cut-setup; do
+for sk in $(ls skill); do
   if [ -e ~/.claude/skills/$sk ] && [ ! -L ~/.claude/skills/$sk ]; then
     echo "   ~/.claude/skills/$sk exists and is not a link - leaving it alone (remove it to use the repo version)"
   else

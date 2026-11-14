@@ -24,6 +24,15 @@ from fonts import drawable  # noqa: E402
 W, H = 1920, 1080
 
 
+def set_canvas(w: int, h: int) -> None:
+    """Render every still (surface, recap, stamps) at w x h instead of 1920x1080 (e.g. 1440x1080 for 4:3)."""
+    import sys as _s
+    for name in ("render_table_stills", "render_recap_styles", "render_stamps"):
+        m = _s.modules.get(name)
+        if m is not None:
+            m.W, m.H = w, h
+
+
 def smooth_noise(rng: np.random.Generator, scale: int, sx: float = 1, sy: float = 1) -> np.ndarray:
     n = rng.standard_normal((H // scale + 2, W // scale + 2)).astype(np.float32)
     n = cv2.resize(n, (W, H), interpolation=cv2.INTER_CUBIC)

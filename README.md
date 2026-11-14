@@ -5,12 +5,13 @@ it analyses everything **locally** (no upload), agrees a story with you, and wri
 first cut as an FCPXML you import into Final Cut. After you edit and grade by hand, it layers sound
 design, handwritten stamps and a photo recap on top of *your* edit without touching your cut.
 
-It ships as two [Claude Code](https://claude.com/claude-code) skills plus the Python scripts they drive:
+It ships as three [Claude Code](https://claude.com/claude-code) skills plus the Python scripts they drive:
 
 | skill | what it does |
 |---|---|
 | `/vlog-cut-setup` | sets up a Mac: tools, Python packages, local models, fonts, checks |
 | `/vlog-cut` | edits a movie: analysis → story → first cut → your Final Cut edit → layers → lessons |
+| `/vlog-cut-switch-aspect` | makes the 4:3 (or 16:9) version of a finished edit as a separate project |
 
 The scripts also work on their own, without Claude (see [Using the scripts](#using-the-scripts)).
 
@@ -51,7 +52,7 @@ The skills expect the repo at `~/Dev/movie-making`.
 1. installs `ffmpeg` and `uv` with Homebrew (if missing)
 2. `uv sync`: creates `.venv/` with Python 3.12 and all packages
 3. downloads the two local models into `models/` (~7 GB, resumable, plain `curl`)
-4. links both skills into `~/.claude/skills/`
+4. links the skills into `~/.claude/skills/`
 5. checks Final Cut Pro, its sound-effects library and the handwriting font
 
 ### Manual, step by step
@@ -109,6 +110,7 @@ and fall back to the plain letter.
 mkdir -p ~/.claude/skills
 ln -sfn ~/Dev/movie-making/skill/vlog-cut       ~/.claude/skills/vlog-cut
 ln -sfn ~/Dev/movie-making/skill/vlog-cut-setup ~/.claude/skills/vlog-cut-setup
+ln -sfn ~/Dev/movie-making/skill/vlog-cut-switch-aspect ~/.claude/skills/vlog-cut-switch-aspect
 ```
 They're symlinks, so `git pull` updates them.
 
@@ -159,6 +161,7 @@ and a one-line `context`, then prefix commands with `VLOG_PROJECT=projects/<movi
 | recap & stamps | `render_recap_styles.py`, `render_stamps.py` | polaroid / film strip / scrapbook recaps, notebook card, handwritten stamps |
 | layering | `augment_fcpxml.py export.fcpxmld layers.json --out name.fcpxml` | audio levels, ramps, sound effects, stamps, stills on top of your edit (cut and grade untouched) |
 | checks | `mixdown.py`, `diff_fcpxml.py`, `timeline_summary.py` | loudness (target −14 LUFS, ≤ −1 dBTP); what changed between two timelines |
+| other aspect | `switch_aspect.py final.fcpxmld --to 4:3`, `reframe.py new.fcpxml --shot C1137=+240` | a separate 4:3 (or 16:9) project: frame, Fill crop, recap/card/stamps re-rendered; slide shots whose subject the crop cuts |
 | publishing | `video_chapters.py final.fcpxmld` | description timestamps from the stamps in your final edit (title/description go in `AI/desc/`) |
 
 Plan and layer formats: `examples/` and `skill/vlog-cut/references/commands.md`. Scripts skip finished work

@@ -84,6 +84,7 @@ survives his re-exports. If you edit the state file while the page is open, relo
 ## 5. Verification snippets
 
 - Diff his edit: `uv run scripts/diff_fcpxml.py base.fcpxml export.fcpxmld`
+- Other aspect ratio (new project, source untouched): `uv run scripts/switch_aspect.py "<final>.fcpxmld" --to 4:3`
 - Description timestamps from his final edit: `uv run scripts/video_chapters.py "<final>.fcpxmld"` (`--json` for data);
   text files go to `<movie>/AI/desc/` (`out_path(cfg, "description.txt")` routes .txt/.md there)
 - Loudness: `uv run scripts/mixdown.py file.fcpxml --out mix.wav` (prints music / camera / sfx / full mix)

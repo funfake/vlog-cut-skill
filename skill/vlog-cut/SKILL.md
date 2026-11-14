@@ -47,6 +47,12 @@ The movie folder looks like `.../MOVIES/<name>/{SHOTS, PICS, <song file>}`. Crea
 `pics_dir`, `music`, `work_dir`, `fcp_event`) and run every script with `VLOG_PROJECT=projects/<slug>.json`.
 If there's no song, ask whether it's an original-sound edit before going on.
 
+**Ask the aspect ratio** (AskUserQuestion, 3 options + free text): **16:9** (Recommended: YouTube, the footage's
+native frame), **4:3**, or **both**. Save it in the movie's settings as `"aspects": ["16:9"]` / `["4:3"]` /
+`["16:9", "4:3"]`. Always edit in 16:9 (the camera's frame); the 4:3 version is derived from the finished
+16:9 edit with `/vlog-cut-switch-aspect` (step 7). If he picks 4:3 only, still plan with the narrower frame in
+mind: keep subjects and stamps away from the outer 12.5 % on each side, which the 4:3 crop removes.
+
 ### 2. Analyse (local, nothing leaves the Mac)
 
 Run in parallel where possible (clips + music + speech are independent; the vision pass needs the clip pass):
@@ -103,6 +109,9 @@ He exports a `.fcpxmld` into `AI/fcpxml/`. Then:
   credit (`musique : Artist, Song`). No hashtags, no marketing tone, no AI-sounding summary; if something
   more is needed, ask him rather than invent it.
 - If stamps are < 10 s apart, tell him YouTube will show them as clickable timestamps, not chapters.
+
+**Other aspect ratio:** if the settings ask for 4:3 (or both), run `/vlog-cut-switch-aspect` on his final export:
+it writes a separate 4:3 project and never touches the 16:9 one.
 
 Thumbnail in the recap style (`AI/thumbnails/`), and a **privacy warning**: list shots with readable number
 plates or strangers' faces (look at the frames; on the first film the owner's own plate was readable in a print and the
